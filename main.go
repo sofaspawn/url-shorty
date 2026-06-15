@@ -12,6 +12,10 @@ import (
 var long2shortMap = make(map[string]string)
 var short2longMap = make(map[string]string)
 
+type Response struct {
+	ShortURL string `json:"short_url"`
+}
+
 // handles "/" requests
 func handleRoot(w http.ResponseWriter, r *http.Request) {
 	const redirect string = "use the /shorten endpoint to create a shortened URL"
@@ -28,7 +32,8 @@ func handlePostShorten(w http.ResponseWriter, r *http.Request) {
 	// 1. parse the request body [x]
 	// 2. extract the URL from the request body [x]
 	// 3. generate a shortened URL using long2short
-	// 4. return the shortened URL
+	// 4. serialize into json
+	// 5. return the shortened URL
 
 	var body struct {
 		URL string `json:"url"`
@@ -39,7 +44,18 @@ func handlePostShorten(w http.ResponseWriter, r *http.Request) {
 	}
 
 	shortURL := long2short(body.URL)
-	fmt.Fprintf(w, shortURL)
+
+	response := Response{
+		ShortURL: shortURL,
+	}
+
+	data, err := json.Marshal(response)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	fmt.Fprintf(w, string(data))
 }
 
 func main() {
