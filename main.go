@@ -14,7 +14,7 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleGetShorten(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "use POST /shorten to create a shortened URL")
+	fmt.Fprintf(w, "use POST /shorten to create a shortened URL\n")
 	fmt.Fprintf(w, "format: {\"url\": \"https://example.com\"}")
 }
 
@@ -23,16 +23,16 @@ func handlePostShorten(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	http.HandleFunc("/", handleRoot)
-
 	mux := http.NewServeMux()
+
+	mux.HandleFunc("GET /", handleRoot)
 	mux.HandleFunc("GET /shorten", handleGetShorten)
 	mux.HandleFunc("POST /shorten", handlePostShorten)
 
 	PORT := ":8080"
 
 	fmt.Println("Server is running on http://localhost" + PORT)
-	if err := http.ListenAndServe(PORT, nil); err != nil {
+	if err := http.ListenAndServe(PORT, mux); err != nil {
 		panic(err)
 	}
 }
