@@ -3,7 +3,7 @@
 
 ## requirements:
 - [x] written in golang
-- [ ] return short url for a given long url & return long url for a given short url  (bijective function)
+- [x] return short url for a given long url & return long url for a given short url  (bijective function)
 - [ ] ability for the user to delete a short url
 
 ## approach:

@@ -17,7 +17,7 @@ type ShortenResponse struct {
 }
 
 type LongifyResponse struct {
-	LongURL string `json:"long_url"`
+	LongURL string `json:"original_url"`
 }
 
 // handles "/" requests
@@ -95,6 +95,19 @@ func handlePostLongify(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, string(data))
 }
 
+func handleDelete(w http.ResponseWriter, r *http.Request) {
+	url := r.PathValue("url")
+	short_url, ok := long2shortMap[url]
+	if !ok {
+		http.Error(w, "URL not found", http.StatusNotFound)
+		return
+	}
+	delete(long2shortMap, url)
+	delete(short2longMap, short_url)
+
+	w.WriteHeader(http.StatusOK)
+}
+
 func main() {
 	mux := http.NewServeMux()
 
@@ -103,6 +116,7 @@ func main() {
 	mux.HandleFunc("POST /shorten", handlePostShorten)
 	mux.HandleFunc("GET /longify", handleGetLongify)
 	mux.HandleFunc("POST /longify", handlePostLongify)
+	mux.HandleFunc("DELETE /delete/{url}", handleDelete)
 
 	PORT := ":8080"
 
