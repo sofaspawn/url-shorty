@@ -12,8 +12,12 @@ import (
 var long2shortMap = make(map[string]string)
 var short2longMap = make(map[string]string)
 
-type Response struct {
+type ShortenResponse struct {
 	ShortURL string `json:"short_url"`
+}
+
+type LongifyResponse struct {
+	LongURL string `json:"long_url"`
 }
 
 // handles "/" requests
@@ -45,8 +49,41 @@ func handlePostShorten(w http.ResponseWriter, r *http.Request) {
 
 	shortURL := long2short(body.URL)
 
-	response := Response{
+	response := ShortenResponse{
 		ShortURL: shortURL,
+	}
+
+	data, err := json.Marshal(response)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	fmt.Fprintf(w, string(data))
+}
+
+func handleGetLongify(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "use POST /longify to get the original URL\n")
+	fmt.Fprintf(w, "format: {\"short_url\": \"short_url\"}")
+}
+
+func handlePostLongify(w http.ResponseWriter, r *http.Request) {
+	var body struct {
+		ShortURL string `json:"short_url"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	longURL, ok := short2longMap[body.ShortURL]
+	if !ok {
+		http.Error(w, "short URL not found", http.StatusNotFound)
+		return
+	}
+
+	response := LongifyResponse{
+		LongURL: longURL,
 	}
 
 	data, err := json.Marshal(response)
@@ -64,6 +101,8 @@ func main() {
 	mux.HandleFunc("GET /", handleRoot)
 	mux.HandleFunc("GET /shorten", handleGetShorten)
 	mux.HandleFunc("POST /shorten", handlePostShorten)
+	mux.HandleFunc("GET /longify", handleGetLongify)
+	mux.HandleFunc("POST /longify", handlePostLongify)
 
 	PORT := ":8080"
 
