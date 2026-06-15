@@ -4,7 +4,9 @@
 ## requirements:
 - [x] written in golang
 - [x] return short url for a given long url & return long url for a given short url  (bijective function)
-- [ ] ability for the user to delete a short url
+- [x] ability for the user to delete a short url
+
+- [ ] HONORARY: use a database instead of local mappings
 
 ## approach:
 ```
