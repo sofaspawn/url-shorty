@@ -2,9 +2,15 @@
 package main
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"net/http"
 )
+
+var long2shortMap = make(map[string]string)
+var short2longMap = make(map[string]string)
 
 // handles "/" requests
 func handleRoot(w http.ResponseWriter, r *http.Request) {
@@ -19,7 +25,21 @@ func handleGetShorten(w http.ResponseWriter, r *http.Request) {
 }
 
 func handlePostShorten(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "POST not implemented yet")
+	// 1. parse the request body [x]
+	// 2. extract the URL from the request body [x]
+	// 3. generate a shortened URL using long2short
+	// 4. return the shortened URL
+
+	var body struct {
+		URL string `json:"url"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	shortURL := long2short(body.URL)
+	fmt.Fprintf(w, shortURL)
 }
 
 func main() {
@@ -35,4 +55,19 @@ func main() {
 	if err := http.ListenAndServe(PORT, mux); err != nil {
 		panic(err)
 	}
+}
+
+func long2short(url string) string {
+	val, ok := long2shortMap[url]
+	if ok {
+		return val
+	}
+	sum := sha256.Sum256([]byte(url))
+	shawty := hex.EncodeToString(sum[:])
+	if len(shawty) > 8 {
+		shawty = shawty[:8]
+	}
+	long2shortMap[url] = shawty
+	short2longMap[shawty] = url
+	return shawty
 }
