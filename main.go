@@ -1,4 +1,3 @@
-// objective 1: start a simple server
 package main
 
 import (
@@ -7,6 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	_ "github.com/lib/pq"
 )
 
 var long2shortMap = make(map[string]string)
